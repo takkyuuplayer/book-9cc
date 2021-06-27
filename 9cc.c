@@ -5,6 +5,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+char *user_input;
+
+void error_at(char *loc, char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+
+  int pos = loc - user_input;
+  fprintf(stderr, "%s\n", user_input);
+  fprintf(stderr, "%*s", pos, "");
+  fprintf(stderr, "^ ");
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
+
 typedef enum {
   TK_RESERVED,
   TK_NUM,
@@ -21,14 +36,6 @@ struct Token {
 
 Token *token;
 
-void error(char *fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  fprintf(stderr, "\n");
-  exit(1);
-}
-
 bool consume(char op) {
   if (token->kind != TK_RESERVED || token->str[0] != op) {
     return false;
@@ -39,14 +46,14 @@ bool consume(char op) {
 
 void expect(char op) {
   if (token->kind != TK_RESERVED || token->str[0] != op) {
-    error("'%c' ではありません", op);
+    error_at(token->str, "'%c' ではありません", op);
   }
   token = token->next;
 }
 
 int expect_number() {
   if (token->kind != TK_NUM) {
-    error("Not a number");
+    error_at(token->str, "Not a number");
   }
   int val = token->val;
   token = token->next;
@@ -81,7 +88,7 @@ Token *tokenize(char *p) {
       cur->val = strtol(p, &p, 10);
       continue;
     }
-    error("untokenizable");
+    error_at(token->str, "untokenizable");
   }
   new_token(TK_EOF, cur, p);
   return head.next;
@@ -91,6 +98,8 @@ int main(int argc, char **argv) {
   if (argc != 2) {
     fprintf(stderr, "The number of arguments must be two.");
   }
+
+  user_input = argv[1];
 
   token = tokenize(argv[1]);
 
