@@ -80,7 +80,7 @@ Token *tokenize(char *p) {
       p++;
       continue;
     }
-    if (*p == '+' || *p == '-') {
+    if (strchr("+-*/()", *p)) {
       cur = new_token(TK_RESERVED, cur, p++);
       continue;
     }
@@ -89,7 +89,7 @@ Token *tokenize(char *p) {
       cur->val = strtol(p, &p, 10);
       continue;
     }
-    error_at(token->str, "untokenizable");
+    error_at(token->str, "invalid token");
   }
   new_token(TK_EOF, cur, p);
   return head.next;
@@ -204,25 +204,15 @@ int main(int argc, char **argv) {
   }
 
   user_input = argv[1];
-
-  token = tokenize(argv[1]);
+  token = tokenize(user_input);
+  Node *node = expr();
 
   printf(".intel_syntax noprefix\n");
   printf(".global main\n");
   printf("main:\n");
 
-  printf("	mov rax, %d\n", expect_number());
-  while (!at_eof()) {
-    if (consume('+')) {
-      printf("	add rax, %d\n", expect_number());
-      continue;
-    }
-    if (consume('-')) {
-      printf("	sub rax, %d\n", expect_number());
-      continue;
-    }
-  }
-
+  gen(node);
+  printf("	pop rax\n");
   printf("	ret\n");
   return 0;
 }
