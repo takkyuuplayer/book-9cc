@@ -184,7 +184,7 @@ Node *primary()
   return new_node_num(expect_number());
 }
 
-// unary   = ("+" | "-")? primary
+// unary   = ("+" | "-")? unary
 Node *unary()
 {
   if (consume('+'))
@@ -193,7 +193,7 @@ Node *unary()
   }
   if (consume('-'))
   {
-    return new_node(ND_SUB, new_node_num(0), primary());
+    return new_node(ND_SUB, new_node_num(0), unary());
   }
   return primary();
 }
