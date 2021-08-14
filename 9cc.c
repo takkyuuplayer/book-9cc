@@ -7,7 +7,8 @@
 
 char *user_input;
 
-void error_at(char *loc, char *fmt, ...) {
+void error_at(char *loc, char *fmt, ...)
+{
   va_list ap;
   va_start(ap, fmt);
 
@@ -20,7 +21,8 @@ void error_at(char *loc, char *fmt, ...) {
   exit(1);
 }
 
-typedef enum {
+typedef enum
+{
   TK_RESERVED,
   TK_NUM,
   TK_EOF,
@@ -28,7 +30,8 @@ typedef enum {
 
 typedef struct Token Token;
 
-struct Token {
+struct Token
+{
   TokenKind kind;
   Token *next;
   int val;
@@ -37,23 +40,29 @@ struct Token {
 
 Token *token;
 
-bool consume(char op) {
-  if (token->kind != TK_RESERVED || token->str[0] != op) {
+bool consume(char op)
+{
+  if (token->kind != TK_RESERVED || token->str[0] != op)
+  {
     return false;
   }
   token = token->next;
   return true;
 }
 
-void expect(char op) {
-  if (token->kind != TK_RESERVED || token->str[0] != op) {
+void expect(char op)
+{
+  if (token->kind != TK_RESERVED || token->str[0] != op)
+  {
     error_at(token->str, "'%c' ではありません", op);
   }
   token = token->next;
 }
 
-int expect_number() {
-  if (token->kind != TK_NUM) {
+int expect_number()
+{
+  if (token->kind != TK_NUM)
+  {
     error_at(token->str, "Not a number");
   }
   int val = token->val;
@@ -63,7 +72,8 @@ int expect_number() {
 
 bool at_eof() { return token->kind == TK_EOF; }
 
-Token *new_token(TokenKind kind, Token *cur, char *str) {
+Token *new_token(TokenKind kind, Token *cur, char *str)
+{
   Token *tok = calloc(1, sizeof(Token));
   tok->kind = kind;
   tok->str = str;
@@ -71,20 +81,25 @@ Token *new_token(TokenKind kind, Token *cur, char *str) {
   return tok;
 }
 
-Token *tokenize(char *p) {
+Token *tokenize(char *p)
+{
   Token head;
   head.next = NULL;
   Token *cur = &head;
-  while (*p) {
-    if (isspace(*p)) {
+  while (*p)
+  {
+    if (isspace(*p))
+    {
       p++;
       continue;
     }
-    if (strchr("+-*/()", *p)) {
+    if (strchr("+-*/()", *p))
+    {
       cur = new_token(TK_RESERVED, cur, p++);
       continue;
     }
-    if (isdigit(*p)) {
+    if (isdigit(*p))
+    {
       cur = new_token(TK_NUM, cur, p);
       cur->val = strtol(p, &p, 10);
       continue;
@@ -95,7 +110,8 @@ Token *tokenize(char *p) {
   return head.next;
 }
 
-typedef enum {
+typedef enum
+{
   ND_ADD, // +
   ND_SUB, // -
   ND_MUL, // *
@@ -105,14 +121,16 @@ typedef enum {
 
 typedef struct Node Node;
 
-struct Node {
+struct Node
+{
   NodeKind kind;
   Node *lhs;
   Node *rhs;
   int val;
 };
 
-Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
+Node *new_node(NodeKind kind, Node *lhs, Node *rhs)
+{
   Node *node = calloc(1, sizeof(Node));
   node->kind = kind;
   node->lhs = lhs;
@@ -120,7 +138,8 @@ Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
   return node;
 }
 
-Node *new_node_num(int val) {
+Node *new_node_num(int val)
+{
   Node *node = calloc(1, sizeof(Node));
   node->kind = ND_NUM;
   node->val = val;
@@ -133,22 +152,31 @@ Node *unary();
 Node *mul();
 
 // expr = mul ("+" mul | "-" mul)*
-Node *expr() {
+Node *expr()
+{
   Node *node = mul();
-  for (;;) {
-    if (consume('+')) {
+  for (;;)
+  {
+    if (consume('+'))
+    {
       node = new_node(ND_ADD, node, mul());
-    } else if (consume('-')) {
+    }
+    else if (consume('-'))
+    {
       node = new_node(ND_SUB, node, mul());
-    } else {
+    }
+    else
+    {
       return node;
     }
   }
 }
 
 // primary = num | "(" expr ")"
-Node *primary() {
-  if (consume('(')) {
+Node *primary()
+{
+  if (consume('('))
+  {
     Node *node = expr();
     expect(')');
     return node;
@@ -157,34 +185,44 @@ Node *primary() {
 }
 
 // unary   = ("+" | "-")? primary
-Node *unary() {
-  if (consume('+')) {
+Node *unary()
+{
+  if (consume('+'))
+  {
     return primary();
   }
-  if (consume('-')) {
+  if (consume('-'))
+  {
     return new_node(ND_SUB, new_node_num(0), primary());
   }
   return primary();
 }
 
-
 // mul = unary ("*" unary | "/" unary)*
-Node *mul() {
+Node *mul()
+{
   Node *node = unary();
-  for (;;) {
-    if (consume('*')) {
+  for (;;)
+  {
+    if (consume('*'))
+    {
       node = new_node(ND_MUL, node, unary());
-    } else if (consume('/')) {
+    }
+    else if (consume('/'))
+    {
       node = new_node(ND_DIV, node, unary());
-    } else {
+    }
+    else
+    {
       return node;
     }
   }
 }
 
-
-void gen(Node *node) {
-  if (node->kind == ND_NUM) {
+void gen(Node *node)
+{
+  if (node->kind == ND_NUM)
+  {
     printf("	push %d\n", node->val);
     return;
   }
@@ -194,7 +232,8 @@ void gen(Node *node) {
 
   printf("	pop rdi\n");
   printf("	pop rax\n");
-  switch (node->kind) {
+  switch (node->kind)
+  {
   case ND_ADD:
     printf("	add rax, rdi\n");
     break;
@@ -215,8 +254,10 @@ void gen(Node *node) {
   printf("	push rax\n");
 }
 
-int main(int argc, char **argv) {
-  if (argc != 2) {
+int main(int argc, char **argv)
+{
+  if (argc != 2)
+  {
     fprintf(stderr, "The number of arguments must be two.");
   }
 
