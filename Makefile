@@ -1,6 +1,11 @@
-CFLAGS=-std=c11 -g -static
+CFLAGS=-std=c11 -g -static # Cの最新規格であるC11で書かれたソースコード
+SRCS=$(wildcard *.c)
+OBJS=$(SRCS:.c=.o) # *.c → *.o に変えたもの
 
-chibicc: chibicc.c
+chibicc: $(OBJS)
+	$(CC) -o chibicc $(OBJS) $(LDFLAGS)
+
+$(OBJS): chibicc.h
 
 test: chibicc
 	./test.sh
