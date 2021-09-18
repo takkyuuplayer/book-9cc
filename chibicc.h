@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+void error(char *fmt, ...);
+
 // Tokenizer
 typedef enum
 {
@@ -53,7 +55,7 @@ struct Node
     int offset;    // Used if kind == ND_LVAR
 };
 
-Node *parse(Token *t);
+Node **parse(Token *t);
 
 // Generator
-void generate(Node *node);
+void generate(Node **node);

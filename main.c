@@ -17,8 +17,8 @@ int main(int argc, char **argv)
 
   // Tokenize and parse.
   Token *token = tokenize(argv[1]);
-  Node *node = parse(token);
-  generate(node);
+  Node **code = parse(token);
+  generate(code);
 
   return 0;
 }

@@ -122,7 +122,7 @@ Token *tokenize(char *c)
         }
 
         // Single-letter punctuator
-        if (strchr("+-*/()<>", *p))
+        if (strchr("+-*/()<>;", *p))
         {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
@@ -167,7 +167,7 @@ Node *new_num(int val)
     return node;
 }
 
-Node *program();
+void program();
 Node *stmt();
 Node *expr();
 Node *assign();
@@ -178,17 +178,25 @@ Node *mul();
 Node *unary();
 Node *primary();
 
-Node *parse(Token *t)
+Node *code[100];
+
+Node **parse(Token *t)
 {
     token = t;
-    return expr();
+    program();
+
+    return code;
 }
 
 // progam = stmt*
-Node *program()
+void program()
 {
-    // TODO
-    return stmt();
+    int i = 0;
+    while (!at_eof())
+    {
+        code[i++] = stmt();
+    }
+    code[i] = NULL;
 }
 
 Node *stmt()
