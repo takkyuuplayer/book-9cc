@@ -35,19 +35,6 @@ bool consume(char *op)
     return true;
 }
 
-Token *consume_indent()
-{
-    if (token->kind != TK_IDENT)
-    {
-        return false;
-    }
-
-    Token *ident = token;
-    token = token->next;
-
-    return token;
-}
-
 // Ensure that the current token is `op`.
 void expect(char *op)
 {
@@ -122,7 +109,7 @@ Token *tokenize(char *c)
         }
 
         // Single-letter punctuator
-        if (strchr("+-*/()<>;", *p))
+        if (strchr("+-*/()<>;=", *p))
         {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
@@ -312,12 +299,11 @@ Node *primary()
         return node;
     }
 
-    Token *token = consume_indent();
-    if (token)
+    if (token->kind == TK_IDENT)
     {
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_LVAR;
-        node->offset = token->str[0] - 'a' + 1 * 8;
+        Node *node = new_node(ND_LVAR);
+        node->offset = (token->str[0] - 'a' + 1) * 8;
+        token = token->next;
         return node;
     }
 
