@@ -35,6 +35,19 @@ bool consume(char *op)
     return true;
 }
 
+Token *consume_indent()
+{
+    if (token->kind != TK_IDENT)
+    {
+        return false;
+    }
+
+    Token *ident = token;
+    token = token->next;
+
+    return token;
+}
+
 // Ensure that the current token is `op`.
 void expect(char *op)
 {
@@ -93,6 +106,12 @@ Token *tokenize(char *c)
             continue;
         }
 
+        if ('a' <= *p && *p <= 'z')
+        {
+            cur = new_token(TK_IDENT, cur, p++, 1);
+            continue;
+        }
+
         // Multi-letter punctuator
         if (startswith(p, "==") || startswith(p, "!=") ||
             startswith(p, "<=") || startswith(p, ">="))
@@ -148,7 +167,10 @@ Node *new_num(int val)
     return node;
 }
 
+Node *program();
+Node *stmt();
 Node *expr();
+Node *assign();
 Node *equality();
 Node *relational();
 Node *add();
@@ -162,10 +184,35 @@ Node *parse(Token *t)
     return expr();
 }
 
-// expr = equality
+// progam = stmt*
+Node *program()
+{
+    // TODO
+    return stmt();
+}
+
+Node *stmt()
+{
+    Node *node = expr();
+    expect(";");
+    return node;
+}
+
+// expr = assign
 Node *expr()
 {
-    return equality();
+    return assign();
+}
+
+// assign     = equality ("=" assign)?
+Node *assign()
+{
+    Node *node = equality();
+    if (consume("="))
+    {
+        node = new_binary(ND_ASSIGN, node, assign());
+    }
+    return node;
 }
 
 // equality = relational ("==" relational | "!=" relational)*
@@ -247,13 +294,22 @@ Node *unary()
     return primary();
 }
 
-// primary = "(" expr ")" | num
+// primary = "(" expr ")" | num | ident
 Node *primary()
 {
     if (consume("("))
     {
         Node *node = expr();
         expect(")");
+        return node;
+    }
+
+    Token *token = consume_indent();
+    if (token)
+    {
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_LVAR;
+        node->offset = token->str[0] - 'a' + 1 * 8;
         return node;
     }
 

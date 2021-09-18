@@ -9,6 +9,7 @@
 typedef enum
 {
     TK_RESERVED, // Keywords or punctuators
+    TK_IDENT,    // Identifier
     TK_NUM,      // Integer literals
     TK_EOF,      // End-of-file markers
 } TokenKind;
@@ -28,15 +29,17 @@ Token *tokenize(char *c);
 // Parser
 typedef enum
 {
-    ND_ADD, // +
-    ND_SUB, // -
-    ND_MUL, // *
-    ND_DIV, // /
-    ND_EQ,  // ==
-    ND_NE,  // !=
-    ND_LT,  // <
-    ND_LE,  // <=
-    ND_NUM, // Integer
+    ND_ADD,    // +
+    ND_SUB,    // -
+    ND_MUL,    // *
+    ND_DIV,    // /
+    ND_EQ,     // ==
+    ND_NE,     // !=
+    ND_LT,     // <
+    ND_LE,     // <=
+    ND_NUM,    // Integer
+    ND_ASSIGN, // =
+    ND_LVAR,   // ローカル変数
 } NodeKind;
 
 // AST node type
@@ -47,6 +50,7 @@ struct Node
     Node *lhs;     // Left-hand side
     Node *rhs;     // Right-hand side
     int val;       // Used if kind == ND_NUM
+    int offset;    // Used if kind == ND_LVAR
 };
 
 Node *parse(Token *t);
