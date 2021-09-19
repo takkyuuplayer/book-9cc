@@ -55,7 +55,25 @@ struct Node
     int offset;    // Used if kind == ND_LVAR
 };
 
-Node **parse(Token *t);
+typedef struct LVar LVar;
+
+// ローカル変数の型
+struct LVar
+{
+    LVar *next; // 次の変数かNULL
+    char *name; // 変数の名前
+    int len;    // 名前の長さ
+    int offset; // RBPからのオフセット
+};
+
+typedef struct Program Program;
+struct Program
+{
+    Node **codes;
+    LVar *locals;
+};
+
+Program *parse(Token *t);
 
 // Generator
-void generate(Node **node);
+void generate(Program *program);

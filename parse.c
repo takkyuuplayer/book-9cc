@@ -10,6 +10,21 @@ static char *user_input;
 // Current token
 static Token *token;
 
+// ローカル変数
+LVar *locals;
+
+LVar *find_lvar(Token *tok)
+{
+    for (LVar *var = locals; var; var = var->next)
+    {
+        if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
+        {
+            return var;
+        }
+    }
+    return NULL;
+}
+
 // Reports an error location and exit.
 void error_at(char *loc, char *fmt, ...)
 {
@@ -95,7 +110,14 @@ Token *tokenize(char *c)
 
         if ('a' <= *p && *p <= 'z')
         {
-            cur = new_token(TK_IDENT, cur, p++, 1);
+            char *start = p;
+            int len = 0;
+            for (; 'a' <= *p && *p <= 'z'; p++)
+            {
+                len++;
+            }
+
+            cur = new_token(TK_IDENT, cur, start, len);
             continue;
         }
 
@@ -167,12 +189,15 @@ Node *primary();
 
 Node *code[100];
 
-Node **parse(Token *t)
+Program *parse(Token *t)
 {
     token = t;
     program();
 
-    return code;
+    Program *program = calloc(1, sizeof(Program));
+    program->codes = code;
+    program->locals = locals;
+    return program;
 }
 
 // progam = stmt*
@@ -302,7 +327,28 @@ Node *primary()
     if (token->kind == TK_IDENT)
     {
         Node *node = new_node(ND_LVAR);
-        node->offset = (token->str[0] - 'a' + 1) * 8;
+        LVar *lvar = find_lvar(token);
+        if (lvar)
+        {
+            node->offset = lvar->offset;
+        }
+        else
+        {
+            lvar = calloc(1, sizeof(LVar));
+            lvar->next = locals;
+            lvar->name = token->str;
+            lvar->len = token->len;
+            if (locals)
+            {
+                lvar->offset = locals->offset + 8;
+            }
+            else
+            {
+                lvar->offset = 8;
+            }
+            locals = lvar;
+            node->offset = lvar->offset;
+        }
         token = token->next;
         return node;
     }

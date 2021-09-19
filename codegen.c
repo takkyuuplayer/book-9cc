@@ -87,7 +87,17 @@ void gen(Node *node)
     printf("  push rax\n");
 }
 
-void generate(Node **code)
+int stack_size(LVar *locals)
+{
+    int i = 0;
+    for (LVar *var = locals; var; var = var->next)
+    {
+        i++;
+    }
+    return 8 * i;
+}
+
+void generate(Program *program)
 {
     // Print out the first half of assembly.
     printf(".intel_syntax noprefix\n");
@@ -98,12 +108,12 @@ void generate(Node **code)
     // 変数26個分の領域を確保する
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
-    printf("  sub rsp, 208\n");
+    printf("  sub rsp, %d\n", stack_size(program->locals));
 
     // Traverse the AST to emit assembly.
-    for (int i = 0; code[i]; i++)
+    for (int i = 0; program->codes[i]; i++)
     {
-        gen(code[i]);
+        gen(program->codes[i]);
         printf("  pop rax\n");
     }
 
