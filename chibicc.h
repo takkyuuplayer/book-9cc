@@ -14,6 +14,10 @@ typedef enum
     TK_IDENT,    // Identifier
     TK_NUM,      // Integer literals
     TK_RETURN,
+    TK_IF,
+    TK_ELSE,
+    TK_WHILE,
+    TK_FOR,
     TK_EOF, // End-of-file markers
 } TokenKind;
 
@@ -44,6 +48,9 @@ typedef enum
     ND_ASSIGN, // =
     ND_LVAR,   // ローカル変数
     ND_RETURN,
+    ND_IF,
+    ND_WHILE,
+    ND_FOR,
 } NodeKind;
 
 // AST node type
@@ -53,8 +60,13 @@ struct Node
     NodeKind kind; // Node kind
     Node *lhs;     // Left-hand side
     Node *rhs;     // Right-hand side
-    int val;       // Used if kind == ND_NUM
-    int offset;    // Used if kind == ND_LVAR
+
+    Node *cond;
+    Node *then;
+    Node *els;
+
+    int val;    // Used if kind == ND_NUM
+    int offset; // Used if kind == ND_LVAR
 };
 
 typedef struct LVar LVar;

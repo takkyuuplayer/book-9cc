@@ -15,6 +15,8 @@ void gen_lval(Node *node)
     printf("  push rax\n");
 }
 
+static int jeLabel = 0;
+
 void gen(Node *node)
 {
     switch (node->kind)
@@ -43,6 +45,15 @@ void gen(Node *node)
         printf("  mov rsp, rbp\n");
         printf("  pop rbp\n");
         printf("  ret\n");
+        return;
+    case ND_IF:
+        gen(node->cond);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  je .Lend%03d\n", jeLabel);
+        gen(node->then);
+        printf(".Lend%03d:\n", jeLabel);
+        jeLabel++;
         return;
     default:
         break;

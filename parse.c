@@ -122,6 +122,30 @@ Token *tokenize(char *c)
             p += 6;
             continue;
         }
+        if (strncmp(p, "if", 2) == 0 && !is_alnum(p[3]))
+        {
+            cur = new_token(TK_IF, cur, p, 2);
+            p += 2;
+            continue;
+        }
+        if (strncmp(p, "else", 4) == 0 && !is_alnum(p[4]))
+        {
+            cur = new_token(TK_IF, cur, p, 4);
+            p += 4;
+            continue;
+        }
+        if (strncmp(p, "while", 5) == 0 && !is_alnum(p[5]))
+        {
+            cur = new_token(TK_WHILE, cur, p, 5);
+            p += 5;
+            continue;
+        }
+        if (strncmp(p, "for", 3) == 0 && is_alnum(p[3]))
+        {
+            cur = new_token(TK_FOR, cur, p, 3);
+            p += 3;
+            continue;
+        }
 
         if ('a' <= *p && *p <= 'z')
         {
@@ -230,18 +254,33 @@ void program()
 Node *stmt()
 {
     Node *node;
-    if (token->kind == TK_RETURN)
+    switch (token->kind)
     {
+    case TK_RETURN:
         node = new_node(ND_RETURN);
         token = token->next;
         node->lhs = expr();
-    }
-    else
-    {
+        expect(";");
+        break;
+    case TK_IF:
+        node = new_node(ND_IF);
+        token = token->next;
+        expect("(");
+        node->cond = expr();
+        expect(")");
+        node->then = stmt();
+        if (token->kind == TK_ELSE)
+        {
+            token = token->next;
+            node->els = stmt();
+        }
+        break;
+    default:
         node = expr();
+        expect(";");
+        break;
     }
 
-    expect(";");
     return node;
 }
 
