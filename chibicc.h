@@ -65,6 +65,9 @@ struct Node
     Node *then;
     Node *els;
 
+    Node *init;
+    Node *inc;
+
     int val;    // Used if kind == ND_NUM
     int offset; // Used if kind == ND_LVAR
 };

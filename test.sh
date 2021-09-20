@@ -58,5 +58,8 @@ assert 2 'if (0) return 1; else return 2;'
 assert 1 'if (1) return 1; else return 2;'
 assert 3 'if (0) return 1; else 2; return 3;'
 assert 10 'i = 0; while (i < 10) i = i + 1; return i;'
+assert 10 'i = 0; for (;i < 10;) i = i + 1; return i;'
+assert 10 'i = 0; sum = 0; for (;i < 5; i = i+1) sum = sum + i; return sum;'
+assert 10 'sum = 0; for (i = 1; i < 5; i = i+1) sum = sum + i; return sum;'
 
 echo OK

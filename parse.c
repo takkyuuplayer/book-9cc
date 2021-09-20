@@ -59,6 +59,14 @@ void expect(char *op)
     token = token->next;
 }
 
+bool peek(char *op)
+{
+    if (token->kind != TK_RESERVED || strlen(op) != token->len ||
+        memcmp(token->str, op, token->len))
+        return false;
+    return true;
+}
+
 // Ensure that the current token is TK_NUM.
 int expect_number()
 {
@@ -140,7 +148,7 @@ Token *tokenize(char *c)
             p += 5;
             continue;
         }
-        if (strncmp(p, "for", 3) == 0 && is_alnum(p[3]))
+        if (strncmp(p, "for", 3) == 0 && !is_alnum(p[3]))
         {
             cur = new_token(TK_FOR, cur, p, 3);
             p += 3;
@@ -281,6 +289,28 @@ Node *stmt()
         expect("(");
         node->cond = expr();
         expect(")");
+        node->then = stmt();
+        break;
+    case TK_FOR:
+        node = new_node(ND_FOR);
+        token = token->next;
+        expect("(");
+        if (!peek(";"))
+        {
+            node->init = expr();
+        }
+        expect(";");
+        if (!peek(";"))
+        {
+            node->cond = expr();
+        }
+        expect(";");
+        if (!peek(")"))
+        {
+            node->inc = expr();
+        }
+        expect(")");
+
         node->then = stmt();
         break;
     default:
