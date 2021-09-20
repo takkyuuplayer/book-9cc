@@ -50,8 +50,19 @@ void gen(Node *node)
         gen(node->cond);
         printf("  pop rax\n");
         printf("  cmp rax, 0\n");
-        printf("  je .Lend%03d\n", jeLabel);
-        gen(node->then);
+        if (!node->els)
+        {
+            printf("  je .Lend%03d\n", jeLabel);
+            gen(node->then);
+        }
+        else
+        {
+            printf("  je .Lelse%03d\n", jeLabel);
+            gen(node->then);
+            printf("  jmp .Lend%03d\n", jeLabel);
+            printf(".Lelse%03d:\n", jeLabel);
+            gen(node->els);
+        }
         printf(".Lend%03d:\n", jeLabel);
         jeLabel++;
         return;
