@@ -66,6 +66,17 @@ void gen(Node *node)
         printf(".Lend%03d:\n", jeLabel);
         jeLabel++;
         return;
+    case ND_WHILE:
+        printf(".Lbegin%03d:\n", jeLabel);
+        gen(node->cond);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  je .Lend%03d\n", jeLabel);
+        gen(node->then);
+        printf("  jmp .Lbegin%03d\n", jeLabel);
+        printf(".Lend%03d:\n", jeLabel);
+        jeLabel++;
+        return;
     default:
         break;
     }

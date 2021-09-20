@@ -275,6 +275,14 @@ Node *stmt()
             node->els = stmt();
         }
         break;
+    case TK_WHILE:
+        node = new_node(ND_WHILE);
+        token = token->next;
+        expect("(");
+        node->cond = expr();
+        expect(")");
+        node->then = stmt();
+        break;
     default:
         node = expr();
         expect(";");
