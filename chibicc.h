@@ -51,6 +51,7 @@ typedef enum
     ND_IF,
     ND_WHILE,
     ND_FOR,
+    ND_BLOCK,
 } NodeKind;
 
 // AST node type
@@ -67,6 +68,9 @@ struct Node
 
     Node *init;
     Node *inc;
+
+    // Block
+    Node *next;
 
     int val;    // Used if kind == ND_NUM
     int offset; // Used if kind == ND_LVAR

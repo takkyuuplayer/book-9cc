@@ -99,6 +99,13 @@ void gen(Node *node)
         printf(".Lend%03d:\n", jeLabel);
         jeLabel++;
         return;
+    case ND_BLOCK:
+        for (Node *n = node->next; n; n = n->next)
+        {
+            gen(n);
+        }
+
+        return;
     default:
         break;
     }

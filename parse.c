@@ -178,7 +178,7 @@ Token *tokenize(char *c)
         }
 
         // Single-letter punctuator
-        if (strchr("+-*/()<>;=", *p))
+        if (strchr("+-*/()<>;={}", *p))
         {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
@@ -262,6 +262,7 @@ void program()
 Node *stmt()
 {
     Node *node;
+
     switch (token->kind)
     {
     case TK_RETURN:
@@ -314,8 +315,28 @@ Node *stmt()
         node->then = stmt();
         break;
     default:
-        node = expr();
-        expect(";");
+        if (peek("{"))
+        {
+            token = token->next;
+
+            Node head = {};
+            Node *cur = &head;
+            while (!peek("}"))
+            {
+                cur->next = stmt();
+                cur = cur->next;
+            }
+            node = new_node(ND_BLOCK);
+            node->next = head.next;
+
+            token = token->next;
+        }
+        else
+        {
+            node = expr();
+            expect(";");
+        }
+
         break;
     }
 
