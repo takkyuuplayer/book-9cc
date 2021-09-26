@@ -1,5 +1,20 @@
 #include "chibicc.h"
 
+char *mystrndup(char *str, int chars)
+{
+    char *buffer;
+    int n;
+
+    buffer = (char *)malloc(chars + 1);
+    if (buffer)
+    {
+        for (n = 0; ((n < chars) && (str[n] != 0)); n++)
+            buffer[n] = str[n];
+        buffer[n] = 0;
+    }
+
+    return buffer;
+}
 //
 // Tokenizer
 //
@@ -442,6 +457,7 @@ Node *unary()
 // primary = "(" expr ")" | num | ident
 Node *primary()
 {
+
     if (consume("("))
     {
         Node *node = expr();
@@ -451,31 +467,53 @@ Node *primary()
 
     if (token->kind == TK_IDENT)
     {
-        Node *node = new_node(ND_LVAR);
-        LVar *lvar = find_lvar(token);
-        if (lvar)
+        Token *current = token;
+        token = token->next;
+
+        if (consume("("))
         {
-            node->offset = lvar->offset;
+            fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+
+            Node *node = new_node(ND_CALL);
+            char *name = mystrndup(current->str, current->len);
+            node->funcname = name;
+            while (!peek(")"))
+            {
+                // parse arguments
+            }
+            consume(")");
+            fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+
+            return node;
         }
         else
         {
-            lvar = calloc(1, sizeof(LVar));
-            lvar->next = locals;
-            lvar->name = token->str;
-            lvar->len = token->len;
-            if (locals)
+            Node *node = new_node(ND_LVAR);
+            LVar *lvar = find_lvar(current);
+            if (lvar)
             {
-                lvar->offset = locals->offset + 8;
+                node->offset = lvar->offset;
             }
             else
             {
-                lvar->offset = 8;
+                lvar = calloc(1, sizeof(LVar));
+                lvar->next = locals;
+                lvar->name = current->str;
+                lvar->len = current->len;
+                if (locals)
+                {
+                    lvar->offset = locals->offset + 8;
+                }
+                else
+                {
+                    lvar->offset = 8;
+                }
+                locals = lvar;
+                node->offset = lvar->offset;
             }
-            locals = lvar;
-            node->offset = lvar->offset;
+
+            return node;
         }
-        token = token->next;
-        return node;
     }
 
     return new_num(expect_number());

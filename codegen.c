@@ -106,6 +106,10 @@ void gen(Node *node)
         }
 
         return;
+    case ND_CALL:
+        printf("  call %s\n", node->funcname);
+
+        return;
     default:
         break;
     }
